@@ -1,3 +1,15 @@
+<!--[metadata]>
++++
+title = "Docker IP address management plugins"
+description = "IP address management plugins"
+keywords = ["Examples, Usage, plugins, docker, ipam, network, api"]
+[menu.main]
+parent = "mn_extend"
+weight=-1
++++
+<![end-metadata]-->
+
+
 # IPAM Driver
 
 During the Network and Endpoints lifecyle, the CNM model controls the IP address assignment for network and endpoint interfaces via the IPAM driver(s).

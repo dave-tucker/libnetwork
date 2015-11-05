@@ -1,3 +1,15 @@
+<!--[metadata]>
++++
+title = "Docker network driver plugins v2"
+description = "Network driver plugins."
+keywords = ["Examples, Usage, plugins, docker, documentation, user guide"]
+[menu.main]
+parent = "mn_extend"
+weight=-1
++++
+<![end-metadata]-->
+
+
 Remote Drivers
 ==============
 

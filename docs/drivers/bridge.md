@@ -1,3 +1,13 @@
+<!--[metadata]>
++++
+title = "The Bridge driver"
+description = "Understanding and using the bridge driver"
+keywords = ["docker, network, driver, plugin, bridge"]
+[menu.main]
+parent = "smn_networking_drivers"
++++
+<![end-metadata]-->
+
 Bridge Driver
 =============
 
