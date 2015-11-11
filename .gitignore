@@ -34,3 +34,4 @@ cmd/dnet/dnet
 .settings/
 
 libnetwork-build.created
+libnetwork.toml

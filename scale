@@ -1,0 +1,141 @@
+#/bin/sh
+
+set -e
+
+usage()
+{
+    cat <<EOF
+NAME:
+    scale - Create Test Environments for Docker Networking at scale
+
+VERSION:
+    0.1
+
+USAGE:
+    $0 <command> [command_options] [arguments...]
+
+COMMANDS:
+    help
+            Help and usage
+
+    up <kv-store> <scale>
+            Create environment with given KV store
+            zookeeper | etcd | consul (default)
+            Create N nodes, default = 2
+
+    destroy
+            Destroy Environment
+
+EOF
+}
+
+step() {
+    printf "\033[0;36m-----> $@\033[0m\n"
+}
+
+up()
+{
+    step "Creating KV Store Machine"
+    docker-machine create \
+        -d virtualbox \
+        mh-kv
+
+    step "KV Store is $1"
+    step "Starting KV Container"
+    case "$1" in
+        etcd)
+        cluster_store="etcd://$(docker-machine ip mh-kv):2379"
+        client="$(docker-machine ip mh-kv):2379"
+        docker $(docker-machine config mh-kv) run -d \
+            -p "2379:2379" \
+            -h "etcd" \
+            --name "etcd" \
+            quay.io/coreos/etcd:v2.2.1 \
+            --listen-client-urls="http://0.0.0.0:2379" \
+            --advertise-client-urls="http://$(docker-machine ip mh-kv):2379"
+        ;;
+        zookeeper)
+        cluster_store="zk://$(docker-machine ip mh-kv):2181"
+        client="$(docker-machine ip mh-kv):2181"
+        docker $(docker-machine config mh-kv) run -d \
+            -p "2181:2181" \
+            -h "zookeeper" \
+            --name "zookeeper" \
+            tianon/zookeeper
+        ;;
+        *)
+        cluster_store="consul://$(docker-machine ip mh-kv):8500"
+        client="$(docker-machine ip mh-kv):8500"
+        docker $(docker-machine config mh-kv) run -d \
+            -p "8500:8500" \
+            -h "consul" \
+            --name "consul" \
+            progrium/consul -server -bootstrap-expect 1
+        ;;
+    esac
+
+    cat > libnetwork.toml <<EOF
+title = "LibNetwork Configuration file"
+[daemon]
+  debug = false
+[cluster]
+  discovery = "$cluster_store"
+  Address = "eth0"
+  Heartbeat = 20
+[datastore]
+  embedded = false
+[datastore.client]
+  provider = "consul"
+  Address = "$client"
+EOF
+
+    step "Creating Scale Test Machine"
+    docker-machine create \
+        -d virtualbox \
+        mh-scale
+
+    machines=$2
+    if [ -z machines ]; then
+        machines=2
+    fi
+ 
+    step "Building 'dnet' container"
+    docker $(docker-machine config mh-scale) build -t dnet -f Dockerfile.dnet .
+
+    step "Creating $machines 'dnet' instances"
+
+    for i in $(seq $machines); do
+    step "Creating container $i"
+        docker $(docker-machine config mh-scale) run \
+            -itd \
+            --cap-add NET_ADMIN \
+            --cap-add SYS_MODULE \
+            -v /lib/modules:/lib/modules \
+            -v `pwd`/libnetwork.toml:/etc/dnet/libnetwork.toml \
+            dnet -D -d -c /etc/dnet/libnetwork.toml
+    done
+}
+
+destroy()
+{
+    for x in $(docker-machine ls | grep mh- | awk '{ print $1 }'); do
+        docker-machine rm $x
+    done
+    rm libnetwork.toml
+}
+
+case "$1" in
+    up)
+        shift
+        up $@
+        ;;
+    destroy)
+        destroy $@
+        ;;
+    help)
+        usage
+        ;;
+    *)
+    usage
+        ;;
+esac
