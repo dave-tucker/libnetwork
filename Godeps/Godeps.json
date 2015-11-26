@@ -195,8 +195,8 @@
 		},
 		{
 			"ImportPath": "github.com/opencontainers/runc/libcontainer",
-			"Comment": "v0.0.3",
-			"Rev": "072fa6fdccaba49b11ba91ad4265b1ec1043787e"
+			"Comment": "v0.0.5",
+			"Rev": "97bc9a7faf3dd660d9be90a2880b2e37f3cdbf38"
 		},
 		{
 			"ImportPath": "github.com/samuel/go-zookeeper/zk",
@@ -208,7 +208,7 @@
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
-			"Rev": "e55e5833692b49e49a0073ad5baf7803f21bebf4"
+			"Rev": "2c00daeb6c3b45114c80ac44119e7b8801fdd852"
 		},
 		{
 			"ImportPath": "github.com/ugorji/go/codec",
